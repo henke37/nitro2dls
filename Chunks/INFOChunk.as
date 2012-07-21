@@ -8,19 +8,19 @@
 
 		public function INFOChunk() {
 			super("INFO");
+			
+			attributes={};
 		}
 		
 		public function setDefaultAttributes(gameTitle:String):void {
 			var date:Date=new Date();
 			
-			attributes={
-				ISFT: "Henke37's Nitro2DLS converter v 0.1",
-				IMED: "Nintendo composer archive",
-				ICRD: (date.fullYear+"-"+pad(date.month+1)+"-"+pad(date.date)),
-				IKEY: "DS; Nintendo; Rip; Game; Converted",
-				IPRD: gameTitle,
-				IGNR: "game"
-			};
+			attributes["ISFT"] =  "Henke37's Nitro2DLS converter v 0.1",
+			attributes["IMED"] =  "Nintendo composer archive";
+			attributes["ICRD"] =  (date.fullYear+"-"+pad(date.month+1)+"-"+pad(date.date));
+			attributes["IKEY"] =  "DS; Nintendo; Rip; Game; Converted";
+			attributes["IPRD"] =  gameTitle;
+			attributes["IGNR"] =  "game";
 		}
 		
 		private function buildSubchunks():void {

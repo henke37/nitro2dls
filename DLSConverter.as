@@ -132,6 +132,7 @@
 			
 			for(var bankId:uint=0;bankId<sdat.bankInfo.length;++bankId) {
 				var bank:SBNK=sdat.openBank(bankId);
+				var bankInfo:BankInfoRecord=sdat.bankInfo[bankId];
 				
 				for(var instrumentId:uint=0;instrumentId<bank.instruments.length;++instrumentId) {
 					
@@ -159,7 +160,9 @@
 						var rgnh:rgnhChunk=new rgnhChunk(region.lowEnd,region.highEnd,rgnhChunk.F_RGN_OPTION_SELFNONEXCLUSIVE);
 						rgn.subchunks.push(rgnh);
 						
-						var waveIndex:uint=waveBankStarts[region.swar]+region.swav;
+						var archiveIndex:uint=bankInfo.swars[region.swar];
+						
+						var waveIndex:uint=waveBankStarts[archiveIndex]+region.swav;
 						
 						var wlnk:wlnkChunk=new wlnkChunk(waveIndex);
 						rgn.subchunks.push(wlnk);
