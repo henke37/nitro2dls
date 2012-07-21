@@ -6,6 +6,7 @@
 	import Nitro.SDAT.InfoRecords.*;
 	
 	import Chunks.*;
+	import HTools.Audio.WaveWriter;
 	
 	public class DLSConverter {
 		
@@ -102,16 +103,26 @@
 		}
 		
 		private function convertWave(w:Wave):waveChunk {
-			//TODO: convert the sample
-			var chunk:waveChunk=new waveChunk(new ByteArray());
-			//Note: should add the wsmp chunk here
+			
+			var encoder:WaveWriter=new WaveWriter(false,16,w.samplerate);
+			var decoder:WaveDecoder=new WaveDecoder(w);
+			decoder.loopAllowed=false;
+			decoder.rendAsMono=true;
+			
+			const rendSize:uint=8000;
+			var rendBuf:ByteArray=new ByteArray();
+			do {
+				rendBuf.length=0;
+				var rendered:uint=decoder.render(rendBuf,rendSize);
+			} while(rendered==rendSize);
+			
+			var chunk:waveChunk=new waveChunk(encoder.outBuffer);
 			
 			return chunk;
 		}
 		
 		private function buildInstruments():void {
 			var lins:LISTChunk=new LISTChunk("lins");
-			
 			
 			var instrumentCount:uint;
 			
