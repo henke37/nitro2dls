@@ -104,7 +104,9 @@
 		
 		private function convertWave(w:Wave):waveChunk {
 			
-			var encoder:WaveWriter=new WaveWriter(false,16,w.samplerate);
+			var sampleSize:uint=((w.encoding==Wave.PCM8)?8:16);
+			
+			var encoder:WaveWriter=new WaveWriter(false,sampleSize,w.samplerate);
 			var decoder:WaveDecoder=new WaveDecoder(w);
 			decoder.loopAllowed=false;
 			decoder.rendAsMono=true;

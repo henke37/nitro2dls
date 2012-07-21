@@ -15,7 +15,7 @@
 		public function setDefaultAttributes(gameTitle:String):void {
 			var date:Date=new Date();
 			
-			attributes["ISFT"] =  "Henke37's Nitro2DLS converter v 0.1",
+			attributes["ISFT"] =  "Henke37's Nitro2DLS converter v 0.2",
 			attributes["IMED"] =  "Nintendo composer archive";
 			attributes["ICRD"] =  (date.fullYear+"-"+pad(date.month+1)+"-"+pad(date.date));
 			attributes["IKEY"] =  "DS; Nintendo; Rip; Game; Converted";

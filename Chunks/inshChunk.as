@@ -24,7 +24,7 @@
 		protected override function writeContents(b:ByteArray):void {
 			b.writeUnsignedInt(regionCount);
 			b.writeUnsignedInt(bankId);
-			b.writeUnsignedInt(instrumentId | (drumkit?0x80:0) );
+			b.writeUnsignedInt(instrumentId | (drumkit?0x80000000:0) );
 		}
 	}
 	

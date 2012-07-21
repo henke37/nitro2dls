@@ -16,11 +16,13 @@
 		
 		private var sdat:SDAT;
 		
+		private static const game:String="gs3";
+		
 		public function Nitro2DLS() {
 			loader=new URLLoader();
 			loader.dataFormat=URLLoaderDataFormat.BINARY;
 			loader.addEventListener(Event.COMPLETE,loaded);
-			loader.load(new URLRequest("aj.nds"));
+			loader.load(new URLRequest(game+".nds"));
 		}
 		
 		private function loaded(e:Event):void {
@@ -33,7 +35,7 @@
 			var dlsConverter:DLSConverter=new DLSConverter(sdat,nds.banner.enTitle);
 			
 			var fr:FileReference=new FileReference();
-			fr.save(dlsConverter.convert(),"aj.dls");
+			fr.save(dlsConverter.convert(),game+".dls");
 		}
 	}
 	

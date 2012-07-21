@@ -9,6 +9,8 @@
 		public var listType:String;
 		
 		public var pointerTable:Vector.<uint>;
+		
+		public static const subHeaderSize:uint=4;
 
 		public function LISTChunk(listType:String) {
 			super("LIST");
