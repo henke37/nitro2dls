@@ -31,7 +31,7 @@
 			sdat.parse(nds.fileSystem.openFileByName("sound_data.sdat"));
 			
 			var dlsConverter:DLSConverter=new DLSConverter(sdat,nds.banner.enTitle);
-			dlsConverter.convert();
+			//dlsConverter.convert();
 		}
 	}
 	

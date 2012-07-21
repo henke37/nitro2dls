@@ -6,6 +6,8 @@
 		
 		public var tag:String;
 		private static const chunkAlignment:uint=2;
+		
+		private var cachedCopy:ByteArray;
 
 		public function Chunk(tag:String) {
 			if(!tag || tag.length!=4) throw new ArgumentError("Invalid tag!");
@@ -13,6 +15,8 @@
 		}
 
 		public function writeChunk():ByteArray {
+			if(cachedCopy) return cachedCopy;
+			
 			var chunk:ByteArray=new ByteArray();
 			
 			chunk.writeUTFBytes(tag);
@@ -29,6 +33,8 @@
 			while(chunk.length%chunkAlignment) {
 				chunk.writeByte(0);
 			}
+			
+			cachedCopy=chunk;
 			
 			return chunk;
 		}

@@ -17,6 +17,7 @@
 		
 		private var waveBankStarts:Object;
 		private var waveBankList:Vector.<uint>;
+		private var waves:Vector.<Wave>;
 
 		public function DLSConverter(sdat:SDAT,gameTitle:String) {
 			if(!sdat) throw new ArgumentError("No SDAT!");
@@ -44,7 +45,7 @@
 			buildWavePool();
 			
 			//build a list of all the instruments
-			
+			buildInstruments();
 			
 			return riff.writeChunk();
 		}
@@ -69,8 +70,9 @@
 		
 		private function buildWavePool():void {
 			waveBankStarts={};
+			waves=new Vector.<Wave>();
 			
-			var wvpl:wvplChunk=new LISTChunk("wvpl");
+			var wvpl:LISTChunk=new LISTChunk("wvpl");
 			
 			var waveSlot:uint=0;
 			for each(var id:uint in waveBankList) {
@@ -79,13 +81,23 @@
 				waveBankStarts[id]=waveSlot;
 				
 				for(var j:uint=0;j<swar.waves.length;++j) {
-					var wChunk:waveChunk=convertWave(swar.waves[j]);
+					var wave:Wave=swar.waves[j];
+					var wChunk:waveChunk=convertWave(wave);
 					wvpl.subchunks.push(wChunk);
+					
+					waves[waveSlot]=wave;
+					
 					++waveSlot;
 				}
 			}
 			
-			var ptbl:LISTChunk=new LISTChunk("ptbl");
+			wvpl.pointerTable=new Vector.<uint>();
+			wvpl.writeChunk();//precache the list since we are building a pointer table to it
+			
+			var ptbl:ptblChunk=new ptblChunk(wvpl.pointerTable);
+			riff.subchunks.push(ptbl);
+			
+			riff.subchunks.push(wvpl);//I like my tables before the data for some reason
 			
 		}
 		
@@ -95,6 +107,67 @@
 			//Note: should add the wsmp chunk here
 			
 			return chunk;
+		}
+		
+		private function buildInstruments():void {
+			var lins:LISTChunk=new LISTChunk("lins");
+			
+			
+			var instrumentCount:uint;
+			
+			for(var bankId:uint=0;bankId<sdat.bankInfo.length;++bankId) {
+				var bank:SBNK=sdat.openBank(bankId);
+				
+				for(var instrumentId:uint=0;instrumentId<bank.instruments.length;++instrumentId) {
+					
+					var instrument:Instrument=bank.instruments[instrumentId];
+					
+					if(instrument.noteType!=Instrument.NOTETYPE_PCM) continue;
+					
+					++instrumentCount;
+					
+					var ins:LISTChunk=new LISTChunk("ins ");
+					lins.subchunks.push(ins);
+					
+					var insh:inshChunk=new inshChunk(bankId,instrumentId,instrument.regions.length,instrument.drumset);
+					ins.subchunks.push(insh);
+					
+					var lrgn:LISTChunk=new LISTChunk("lrgn");
+					
+					for(var regionId:uint=0;regionId<instrument.regions.length;++regionId) {
+						var region:InstrumentRegion=instrument.regions[regionId];
+						
+						var rgn:LISTChunk=new LISTChunk("rgn ");
+						lrgn.subchunks.push(rgn);
+						
+						var rgnh:rgnhChunk=new rgnhChunk(region.lowEnd,region.highEnd,rgnhChunk.F_RGN_OPTION_SELFNONEXCLUSIVE);
+						rgn.subchunks.push(rgnh);
+						
+						var waveIndex:uint=waveBankStarts[region.swar]+region.swav;
+						
+						var wlnk:wlnkChunk=new wlnkChunk(waveIndex);
+						rgn.subchunks.push(wlnk);
+						
+						var wave:Wave=waves[waveIndex];
+						
+						var loopLen:uint;
+						if(wave.loops) {
+							loopLen=wave.sampleCount-wave.loopStart;
+						} else {
+							loopLen=0;
+						}
+						
+						var wsmp:wsmpChunk=new wsmpChunk(region.baseNote,wave.loopStart,loopLen);
+						rgn.subchunks.push(wsmp);
+					}
+				}
+			}
+			
+			var colh:colhChunk=new colhChunk(instrumentCount);
+			riff.subchunks.push(colh);
+			
+			riff.subchunks.push(lins);//might be a good idea to put the instrument list after the instrument count
+			
 		}
 
 	}

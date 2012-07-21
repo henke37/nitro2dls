@@ -7,6 +7,8 @@
 		public var subchunks:Vector.<Chunk>;
 		
 		public var listType:String;
+		
+		public var pointerTable:Vector.<uint>;
 
 		public function LISTChunk(listType:String) {
 			super("LIST");
@@ -20,7 +22,17 @@
 
 		protected override function writeContents(b:ByteArray):void {
 			b.writeUTFBytes(listType);
-			for each(var chunk:Chunk in subchunks) {
+			
+			if(pointerTable) {
+				pointerTable.length=subchunks.length;
+				pointerTable.fixed=true;
+			}
+			
+			for(var i:uint=0;i<subchunks.length;++i) {
+				var chunk:Chunk=subchunks[i];
+				if(pointerTable) {
+					pointerTable[i]=b.position;
+				}
 				b.writeBytes(chunk.writeChunk());
 			}
 		}

@@ -6,6 +6,7 @@
 		private var waveFile:ByteArray;
 
 		public function waveChunk(waveFile:ByteArray) {
+			super("wave");
 			if(!waveFile) throw new ArgumentError("No wavefile!");
 			this.waveFile=waveFile;
 		}
