@@ -30,10 +30,19 @@
 			
 			for(var i:uint=0;i<subchunks.length;++i) {
 				var chunk:Chunk=subchunks[i];
+				
 				if(pointerTable) {
 					pointerTable[i]=b.position;
 				}
 				b.writeBytes(chunk.writeChunk());
+				
+				if(listType=="DLS ") {
+					if(chunk is LISTChunk) {
+						trace(chunk.writeChunk().length,b.position,chunk.tag,LISTChunk(chunk).listType);
+					} else {
+						trace(chunk.writeChunk().length,b.position,chunk.tag);
+					}
+				}
 			}
 		}
 	}

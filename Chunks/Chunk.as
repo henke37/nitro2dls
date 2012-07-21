@@ -6,6 +6,7 @@
 		
 		public var tag:String;
 		private static const chunkAlignment:uint=2;
+		public static const headerSize:uint=8;
 		
 		private var cachedCopy:ByteArray;
 
@@ -18,6 +19,7 @@
 			if(cachedCopy) return cachedCopy;
 			
 			var chunk:ByteArray=new ByteArray();
+			chunk.endian=Endian.LITTLE_ENDIAN;
 			
 			chunk.writeUTFBytes(tag);
 			chunk.length=8;
@@ -27,7 +29,7 @@
 			writeContents(chunk);
 			
 			chunk.position=4;
-			chunk.writeUnsignedInt(chunk.length);
+			chunk.writeUnsignedInt(chunk.length-headerSize);
 			
 			chunk.position=chunk.length;
 			while(chunk.length%chunkAlignment) {

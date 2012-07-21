@@ -14,7 +14,7 @@
 			var date:Date=new Date();
 			
 			attributes={
-				ISFT: "Henke37's Nitro2DLS converter",
+				ISFT: "Henke37's Nitro2DLS converter v 0.1",
 				IMED: "Nintendo composer archive",
 				ICRD: (date.fullYear+"-"+pad(date.month+1)+"-"+pad(date.date)),
 				IKEY: "DS; Nintendo; Rip; Game; Converted",
@@ -41,7 +41,7 @@
 			var o:String=i.toString();
 			
 			while(o.length<l) {
-				o+="0"+o;
+				o="0"+o;
 			}
 			return o;
 		}

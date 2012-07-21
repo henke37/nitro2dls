@@ -37,7 +37,7 @@
 			//set some metadata
 			var infoChunk:INFOChunk=new INFOChunk();
 			infoChunk.setDefaultAttributes(gameTitle);
-			
+			riff.subchunks.push(infoChunk);
 			
 			//build a list of all wave banks needed
 			buildWaveBankList();
@@ -114,7 +114,11 @@
 			do {
 				rendBuf.length=0;
 				var rendered:uint=decoder.render(rendBuf,rendSize);
+				rendBuf.position=0;
+				encoder.addSamples(rendBuf);
 			} while(rendered==rendSize);
+			
+			encoder.finalize();
 			
 			var chunk:waveChunk=new waveChunk(encoder.outBuffer);
 			
@@ -132,7 +136,7 @@
 				for(var instrumentId:uint=0;instrumentId<bank.instruments.length;++instrumentId) {
 					
 					var instrument:Instrument=bank.instruments[instrumentId];
-					
+					if(!instrument) continue;
 					if(instrument.noteType!=Instrument.NOTETYPE_PCM) continue;
 					
 					++instrumentCount;
@@ -144,6 +148,7 @@
 					ins.subchunks.push(insh);
 					
 					var lrgn:LISTChunk=new LISTChunk("lrgn");
+					ins.subchunks.push(lrgn);
 					
 					for(var regionId:uint=0;regionId<instrument.regions.length;++regionId) {
 						var region:InstrumentRegion=instrument.regions[regionId];

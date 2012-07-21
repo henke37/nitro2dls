@@ -14,10 +14,12 @@
 		public override function writeChunk():ByteArray {
 			
 			waveFile.position=0;
-			waveFile.writeUTFBytes("wave");
+			waveFile.writeUTFBytes("LIST");
 			
 			waveFile.position=8;
-			waveFile.writeUTFBytes("LIST");
+			waveFile.writeUTFBytes("wave");
+			
+			waveFile.position=0;
 			
 			return waveFile;
 		}
