@@ -180,6 +180,44 @@
 						
 						var wsmp:wsmpChunk=new wsmpChunk(region.baseNote,wave.loopStart,loopLen);
 						rgn.subchunks.push(wsmp);
+						
+						var art1:art1Chunk=new art1Chunk();
+						rgn.subchunks.push(art1);
+						
+						art1.connections.push(new art1ChunkConnection(
+							art1ChunkConnection.CONN_SRC_NONE,
+							art1ChunkConnection.CONN_SRC_NONE,
+							art1ChunkConnection.CONN_DST_EG1_ATTACKTIME,
+							region.attack)
+						);
+						
+						art1.connections.push(new art1ChunkConnection(
+							art1ChunkConnection.CONN_SRC_NONE,
+							art1ChunkConnection.CONN_SRC_NONE,
+							art1ChunkConnection.CONN_DST_EG1_DECAYTIME,
+							region.decay)
+						);
+						
+						art1.connections.push(new art1ChunkConnection(
+							art1ChunkConnection.CONN_SRC_NONE,
+							art1ChunkConnection.CONN_SRC_NONE,
+							art1ChunkConnection.CONN_DST_EG1_SUSTAINLEVEL,
+							region.sustain)
+						);
+						
+						art1.connections.push(new art1ChunkConnection(
+							art1ChunkConnection.CONN_SRC_NONE,
+							art1ChunkConnection.CONN_SRC_NONE,
+							art1ChunkConnection.CONN_DST_EG1_RELEASETIME,
+							region.release)
+						);
+						
+						art1.connections.push(new art1ChunkConnection(
+							art1ChunkConnection.CONN_SRC_NONE,
+							art1ChunkConnection.CONN_SRC_NONE,
+							art1ChunkConnection.CONN_DST_PAN,
+							region.pan)
+						);
 					}
 				}
 			}

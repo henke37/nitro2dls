@@ -10,6 +10,8 @@
 		private var regionCount:uint;
 		
 		private var drumkit:Boolean;
+		
+		private static const F_INSTRUMENT_DRUMS:uint=0x80000000;
 
 		public function inshChunk(bankId:uint,instrumentId:uint,regionCount:uint,drumkit:Boolean=false) {
 			super("insh");
@@ -23,8 +25,8 @@
 
 		protected override function writeContents(b:ByteArray):void {
 			b.writeUnsignedInt(regionCount);
-			b.writeUnsignedInt(bankId);
-			b.writeUnsignedInt(instrumentId | (drumkit?0x80000000:0) );
+			b.writeUnsignedInt(bankId | (drumkit?F_INSTRUMENT_DRUMS:0) );
+			b.writeUnsignedInt(instrumentId);
 		}
 	}
 	
