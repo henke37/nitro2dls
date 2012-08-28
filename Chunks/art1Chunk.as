@@ -1,6 +1,7 @@
 ﻿package Chunks {
 	
 	import flash.utils.*;
+	import HTools.RIFF.*;
 	
 	public class art1Chunk extends Chunk {
 		

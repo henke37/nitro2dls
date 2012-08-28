@@ -8,6 +8,8 @@
 	import Chunks.*;
 	import HTools.Audio.WaveWriter;
 	
+	import HTools.RIFF.*;
+	
 	public class DLSConverter {
 		
 		private var sdat:SDAT;
@@ -32,12 +34,12 @@
 			riff=new RIFFChunk("DLS ");
 			
 			//set the file version
-			riff.subchunks.push(new versChunk());
+			var vers:versChunk=new versChunk();
+			vers.minor=1;
+			riff.subchunks.push(vers);
 			
-			//set some metadata
-			var infoChunk:INFOChunk=new INFOChunk();
-			infoChunk.setDefaultAttributes(gameTitle);
-			riff.subchunks.push(infoChunk);
+			//
+			setDefaultAttributes();
 			
 			//build a list of all wave banks needed
 			buildWaveBankList();
@@ -49,6 +51,33 @@
 			buildInstruments();
 			
 			return riff.writeChunk();
+		}
+		
+		public function setDefaultAttributes():void {
+			//set some metadata
+			var infoChunk:INFOChunk=new INFOChunk();
+			
+			var attributes:Object=infoChunk.attributes;
+			
+			var date:Date=new Date();
+			
+			attributes["ISFT"] =  "Henke37's Nitro2DLS converter v 0.2",
+			attributes["IMED"] =  "Nintendo composer archive";
+			attributes["ICRD"] =  (date.fullYear+"-"+zeroPad(date.month+1)+"-"+zeroPad(date.date));
+			attributes["IKEY"] =  "DS; Nintendo; Rip; Game; Converted";
+			attributes["IPRD"] =  gameTitle;
+			attributes["IGNR"] =  "game";
+			
+			riff.subchunks.push(infoChunk);
+		}
+		
+		private static function zeroPad(i:uint,l:uint=2):String {
+			var o:String=i.toString();
+			
+			while(o.length<l) {
+				o="0"+o;
+			}
+			return o;
 		}
 		
 		private function buildWaveBankList():void {
@@ -181,43 +210,13 @@
 						var wsmp:wsmpChunk=new wsmpChunk(region.baseNote,wave.loopStart,loopLen);
 						rgn.subchunks.push(wsmp);
 						
-						var art1:art1Chunk=new art1Chunk();
-						rgn.subchunks.push(art1);
-						
-						art1.connections.push(new art1ChunkConnection(
-							art1ChunkConnection.CONN_SRC_NONE,
-							art1ChunkConnection.CONN_SRC_NONE,
-							art1ChunkConnection.CONN_DST_EG1_ATTACKTIME,
-							region.attack)
-						);
-						
-						art1.connections.push(new art1ChunkConnection(
-							art1ChunkConnection.CONN_SRC_NONE,
-							art1ChunkConnection.CONN_SRC_NONE,
-							art1ChunkConnection.CONN_DST_EG1_DECAYTIME,
-							region.decay)
-						);
-						
-						art1.connections.push(new art1ChunkConnection(
-							art1ChunkConnection.CONN_SRC_NONE,
-							art1ChunkConnection.CONN_SRC_NONE,
-							art1ChunkConnection.CONN_DST_EG1_SUSTAINLEVEL,
-							region.sustain)
-						);
-						
-						art1.connections.push(new art1ChunkConnection(
-							art1ChunkConnection.CONN_SRC_NONE,
-							art1ChunkConnection.CONN_SRC_NONE,
-							art1ChunkConnection.CONN_DST_EG1_RELEASETIME,
-							region.release)
-						);
-						
-						art1.connections.push(new art1ChunkConnection(
-							art1ChunkConnection.CONN_SRC_NONE,
-							art1ChunkConnection.CONN_SRC_NONE,
-							art1ChunkConnection.CONN_DST_PAN,
-							region.pan)
-						);
+						if(instrument.regions.length>1) {
+							rgn.subchunks.push(artForRegion(region));
+						}
+					}
+					
+					if(instrument.regions.length==1) {
+						ins.subchunks.push(artForRegion(instrument.regions[0]));
 					}
 				}
 			}
@@ -227,6 +226,50 @@
 			
 			riff.subchunks.push(lins);//might be a good idea to put the instrument list after the instrument count
 			
+		}
+		
+		private static function artForRegion(region:InstrumentRegion):Chunk {
+			var art1:art1Chunk=new art1Chunk();
+			
+			art1.connections.push(new art1ChunkConnection(
+				art1ChunkConnection.CONN_SRC_NONE,
+				art1ChunkConnection.CONN_SRC_NONE,
+				art1ChunkConnection.CONN_DST_EG1_ATTACKTIME,
+				region.attack)
+			);
+			
+			art1.connections.push(new art1ChunkConnection(
+				art1ChunkConnection.CONN_SRC_NONE,
+				art1ChunkConnection.CONN_SRC_NONE,
+				art1ChunkConnection.CONN_DST_EG1_DECAYTIME,
+				region.decay)
+			);
+			
+			art1.connections.push(new art1ChunkConnection(
+				art1ChunkConnection.CONN_SRC_NONE,
+				art1ChunkConnection.CONN_SRC_NONE,
+				art1ChunkConnection.CONN_DST_EG1_SUSTAINLEVEL,
+				region.sustain)
+			);
+			
+			art1.connections.push(new art1ChunkConnection(
+				art1ChunkConnection.CONN_SRC_NONE,
+				art1ChunkConnection.CONN_SRC_NONE,
+				art1ChunkConnection.CONN_DST_EG1_RELEASETIME,
+				region.release)
+			);
+			
+			art1.connections.push(new art1ChunkConnection(
+				art1ChunkConnection.CONN_SRC_NONE,
+				art1ChunkConnection.CONN_SRC_NONE,
+				art1ChunkConnection.CONN_DST_PAN,
+				region.pan)
+			);
+			
+			var lart:LISTChunk=new LISTChunk("lart");
+			lart.subchunks.push(art1);
+			
+			return lart;
 		}
 
 	}

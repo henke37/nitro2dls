@@ -1,5 +1,6 @@
 ﻿package Chunks {
 	import flash.utils.*;
+	import HTools.RIFF.*;
 	
 	public class waveChunk extends Chunk {
 		
