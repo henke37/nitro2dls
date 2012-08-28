@@ -210,14 +210,15 @@
 						var wsmp:wsmpChunk=new wsmpChunk(region.baseNote,wave.loopStart,loopLen);
 						rgn.subchunks.push(wsmp);
 						
-						if(instrument.regions.length>1) {
+						/*if(instrument.regions.length>1) {
 							rgn.subchunks.push(artForRegion(region));
-						}
+						}*/
 					}
 					
+					/*
 					if(instrument.regions.length==1) {
 						ins.subchunks.push(artForRegion(instrument.regions[0]));
-					}
+					}*/
 				}
 			}
 			
