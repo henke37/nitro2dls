@@ -1,4 +1,4 @@
-﻿package  {
+package  {
 	
 	import flash.display.*;
 	import flash.net.*;
@@ -53,33 +53,37 @@
 			
 			sdat=new SDAT();
 			
-			status_txt.text="SDAT loaded.";
-			save_mc.enabled=true;
+			try {
 			
-			var data:ByteArray=openFile();
-			if(ext=="nds") {
-				nds=new NDS();
-				nds.parse(data);
+				status_txt.text="SDAT loaded.";
+				save_mc.enabled=true;
 				
-				var files:Vector.<AbstractFile>=nds.fileSystem.searchForFile(nds.fileSystem.rootDir,/\.(?:sdat|dsxe)$/i,true,true);
-				
-				if(!files.length) {
-					status_txt.text="No SDAT found.";
-					save_mc.enabled=false;
+				var data:ByteArray=openFile();
+				if(ext=="nds") {
+					nds=new NDS();
+					nds.parse(data);
+					
+					var files:Vector.<AbstractFile>=nds.fileSystem.searchForFile(nds.fileSystem.rootDir,/\.(?:sdat|dsxe)$/i,true,true);
+					
+					if(!files.length) {
+						throw new Error("No SDAT found.");
+					} else {
+						sdat.parse(nds.fileSystem.openFileByReference(Nitro.FileSystem.File(files[0])));
+					}
+					
+					status_txt.appendText("\n"+nds.banner.enTitle);
+					
+					holder_mc.visible=true;
+					holder_mc.addChild(new Bitmap(nds.banner.icon));
 				} else {
-					sdat.parse(nds.fileSystem.openFileByReference(Nitro.FileSystem.File(files[0])));
+					nds=null;
+					sdat.parse(data);
 				}
-				
-				status_txt.appendText("\n"+nds.banner.enTitle);
-				
-				holder_mc.visible=true;
-				holder_mc.addChild(new Bitmap(nds.banner.icon));
-			} else {
-				nds=null;
-				sdat.parse(data);
+			
+			} catch(err:Error) {
+				status_txt.text=err.message;
+				save_mc.enabled=false;
 			}
-			
-			
 		}
 		
 		private function openFile():ByteArray {
@@ -101,10 +105,26 @@
 			
 			var gameTitle:String=(nds?nds.banner.enTitle:fileName);
 			
-			var dlsConverter:DLSConverter=new DLSConverter(sdat,gameTitle);
+			try {
 			
-			var fr:FileReference=new FileReference();
-			fr.save(dlsConverter.convert(),fileName+".dls");
+				var dlsConverter:DLSConverter=new DLSConverter(sdat,gameTitle);
+				var dls:ByteArray=dlsConverter.convert();
+				var fr:FileReference=new FileReference();
+				fr.save(dls,fileName+".dls");
+				
+				if(dlsConverter.errors.length>0) {
+					var errStr:String="There were "+dlsConverter.errors.length+" error(s) while extracting.";
+					for(var errI:uint=0;errI<dlsConverter.errors.length;++errI) {
+						var err:Error=dlsConverter.errors[errI];
+						errStr+="\n";
+						errStr+=err.message;
+						trace(err.getStackTrace());
+					}
+					status_txt.text=errStr;
+				}
+			} catch(err:Error) {
+				status_txt.text=err.message;
+			}
 		}
 	}
 	

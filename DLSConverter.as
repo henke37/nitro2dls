@@ -1,4 +1,4 @@
-﻿package  {
+package  {
 	
 	import flash.utils.*;
 	
@@ -21,12 +21,16 @@
 		private var waveBankStarts:Object;
 		private var waveBankList:Vector.<uint>;
 		private var waves:Vector.<Wave>;
+		
+		public var errors:Vector.<Error>;
 
 		public function DLSConverter(sdat:SDAT,gameTitle:String) {
 			if(!sdat) throw new ArgumentError("No SDAT!");
 			this.sdat=sdat;
 			if(!gameTitle) throw new ArgumentError("No game title!");
 			this.gameTitle=gameTitle;
+			
+			errors=new Vector.<Error>();
 		}
 		
 		public function convert():ByteArray {
@@ -162,63 +166,70 @@
 			var instrumentCount:uint;
 			
 			for(var bankId:uint=0;bankId<sdat.bankInfo.length;++bankId) {
-				var bank:SBNK=sdat.openBank(bankId);
-				var bankInfo:BankInfoRecord=sdat.bankInfo[bankId];
 				
-				for(var instrumentId:uint=0;instrumentId<bank.instruments.length;++instrumentId) {
+				try {
+				
+					var bank:SBNK=sdat.openBank(bankId);
+					var bankInfo:BankInfoRecord=sdat.bankInfo[bankId];
 					
-					var instrument:Instrument=bank.instruments[instrumentId];
-					if(!instrument) continue;
-					if(instrument.noteType!=Instrument.NOTETYPE_PCM) continue;
-					
-					++instrumentCount;
-					
-					var ins:LISTChunk=new LISTChunk("ins ");
-					lins.subchunks.push(ins);
-					
-					var insh:inshChunk=new inshChunk(bankId,instrumentId,instrument.regions.length,instrument.drumset);
-					ins.subchunks.push(insh);
-					
-					var lrgn:LISTChunk=new LISTChunk("lrgn");
-					ins.subchunks.push(lrgn);
-					
-					for(var regionId:uint=0;regionId<instrument.regions.length;++regionId) {
-						var region:InstrumentRegion=instrument.regions[regionId];
+					for(var instrumentId:uint=0;instrumentId<bank.instruments.length;++instrumentId) {
 						
-						var rgn:LISTChunk=new LISTChunk("rgn ");
-						lrgn.subchunks.push(rgn);
+						var instrument:Instrument=bank.instruments[instrumentId];
+						if(!instrument) continue;
+						if(instrument.noteType!=Instrument.NOTETYPE_PCM) continue;
 						
-						var rgnh:rgnhChunk=new rgnhChunk(region.lowEnd,region.highEnd,rgnhChunk.F_RGN_OPTION_SELFNONEXCLUSIVE);
-						rgn.subchunks.push(rgnh);
+						++instrumentCount;
 						
-						var archiveIndex:uint=bankInfo.swars[region.swar];
+						var ins:LISTChunk=new LISTChunk("ins ");
+						lins.subchunks.push(ins);
 						
-						var waveIndex:uint=waveBankStarts[archiveIndex]+region.swav;
+						var insh:inshChunk=new inshChunk(bankId,instrumentId,instrument.regions.length,instrument.drumset);
+						ins.subchunks.push(insh);
 						
-						var wlnk:wlnkChunk=new wlnkChunk(waveIndex);
-						rgn.subchunks.push(wlnk);
+						var lrgn:LISTChunk=new LISTChunk("lrgn");
+						ins.subchunks.push(lrgn);
 						
-						var wave:Wave=waves[waveIndex];
-						
-						var loopLen:uint;
-						if(wave.loops) {
-							loopLen=wave.sampleCount-wave.loopStart;
-						} else {
-							loopLen=0;
+						for(var regionId:uint=0;regionId<instrument.regions.length;++regionId) {
+							var region:InstrumentRegion=instrument.regions[regionId];
+							
+							var rgn:LISTChunk=new LISTChunk("rgn ");
+							lrgn.subchunks.push(rgn);
+							
+							var rgnh:rgnhChunk=new rgnhChunk(region.lowEnd,region.highEnd,rgnhChunk.F_RGN_OPTION_SELFNONEXCLUSIVE);
+							rgn.subchunks.push(rgnh);
+							
+							var archiveIndex:uint=bankInfo.swars[region.swar];
+							
+							var waveIndex:uint=waveBankStarts[archiveIndex]+region.swav;
+							
+							var wlnk:wlnkChunk=new wlnkChunk(waveIndex);
+							rgn.subchunks.push(wlnk);
+							
+							var wave:Wave=waves[waveIndex];
+							
+							var loopLen:uint;
+							if(wave.loops) {
+								loopLen=wave.sampleCount-wave.loopStart;
+							} else {
+								loopLen=0;
+							}
+							
+							var wsmp:wsmpChunk=new wsmpChunk(region.baseNote,wave.loopStart,loopLen);
+							rgn.subchunks.push(wsmp);
+							
+							/*if(instrument.regions.length>1) {
+								rgn.subchunks.push(artForRegion(region));
+							}*/
 						}
 						
-						var wsmp:wsmpChunk=new wsmpChunk(region.baseNote,wave.loopStart,loopLen);
-						rgn.subchunks.push(wsmp);
-						
-						/*if(instrument.regions.length>1) {
-							rgn.subchunks.push(artForRegion(region));
+						/*
+						if(instrument.regions.length==1) {
+							ins.subchunks.push(artForRegion(instrument.regions[0]));
 						}*/
 					}
-					
-					/*
-					if(instrument.regions.length==1) {
-						ins.subchunks.push(artForRegion(instrument.regions[0]));
-					}*/
+				} catch (err:Error) {
+					errors.push(err);
+					continue;
 				}
 			}
 			
